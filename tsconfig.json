@@ -19,8 +19,7 @@
     "baseUrl": "./packages"
   },
   "include": [
-    "packages/**/*",
-    "eslint.config.mts"
+    "packages/**/*"
   ],
   "exclude": [
     "node_modules",
