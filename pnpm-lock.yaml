@@ -42,6 +42,14 @@ importers:
         specifier: ^4.9.5
         version: 4.9.5
 
+  packages/react:
+    dependencies:
+      shared:
+        specifier: workspace:*
+        version: link:../shared
+
+  packages/shared: {}
+
 packages:
 
   '@babel/code-frame@7.29.0':
