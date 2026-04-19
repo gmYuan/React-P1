@@ -18,7 +18,8 @@
     "skipLibCheck": true,
     "baseUrl": "./packages",
     "paths": {
-      "shared/*": ["shared/*"]
+      "shared/*": ["shared/*"],
+      "hostConfig": ["./react-reconciler/src/hostConfig.ts"]
     }
   },
   "include": [
