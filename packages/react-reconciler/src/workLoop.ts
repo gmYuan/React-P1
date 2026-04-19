@@ -11,7 +11,7 @@ function prepareFreshStack(fiber: FiberNode) {
 function renderRoot(root: FiberNode) {
   // 初始化
   prepareFreshStack(root);
-  
+
   do {
     try {
       workLoop();
@@ -32,7 +32,7 @@ function workLoop() {
 function performUnitOfWork(fiber: FiberNode) {
   const next = beginWork(fiber);
   fiber.memoizedProps = fiber.pendingProps;
-  
+
   if (next === null) {
     completeUnitOfWork(fiber);
   } else {
@@ -42,11 +42,11 @@ function performUnitOfWork(fiber: FiberNode) {
 
 function completeUnitOfWork(fiber: FiberNode) {
   let node: FiberNode | null = fiber;
-  
+
   do {
     completeWork(node);
     const sibling = node.sibling;
-    
+
     if (sibling !== null) {
       workInProgress = sibling;
       return;
