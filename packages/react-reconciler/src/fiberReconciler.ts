@@ -1,7 +1,12 @@
 import { Container } from 'hostConfig';
 import { ReactElementType } from 'shared/ReactTypes';
 import { FiberNode, FiberRootNode } from './fiber';
-import { createUpdate, createUpdateQueue, enqueueUpdate, UpdateQueue } from './updateQueue';
+import {
+  createUpdate,
+  createUpdateQueue,
+  enqueueUpdate,
+  UpdateQueue
+} from './updateQueue';
 import { scheduleUpdateOnFiber } from './workLoop';
 import { HostRoot } from './workTags';
 
