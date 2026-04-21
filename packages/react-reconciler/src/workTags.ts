@@ -5,6 +5,7 @@ export type WorkTag =
   | typeof HostText;
 
 export const FunctionComponent = 0;
+// fiber树的根节点
 export const HostRoot = 3;
 // <div>123</div>
 export const HostComponent = 5;
