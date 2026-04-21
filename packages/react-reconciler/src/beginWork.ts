@@ -5,7 +5,7 @@ import { ReactElementType } from 'shared/ReactTypes';
 import { mountChildFibers, reconcileChildFibers } from './childFibers';
 
 // 递归中的递阶段
-export const beginWork = (wip: FiberNode) => {
+export const beginWork = (wip: FiberNode): FiberNode | null => {
   // 比较,返回子fiberNode
   switch (wip.tag) {
     case HostRoot:
@@ -20,6 +20,7 @@ export const beginWork = (wip: FiberNode) => {
       }
       break;
   }
+  return null;
 };
 
 function updateHostRoot(wip: FiberNode) {
