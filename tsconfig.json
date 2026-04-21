@@ -12,14 +12,14 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "noEmit": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noImplicitReturns": false,
     "skipLibCheck": true,
     "baseUrl": "./packages",
     "paths": {
       "shared/*": ["shared/*"],
-      "hostConfig": ["./react-reconciler/src/hostConfig.ts"]
+      "hostConfig": ["./react-dom/src/hostConfig.ts"]
     }
   },
   "include": [

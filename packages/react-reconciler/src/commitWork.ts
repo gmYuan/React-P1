@@ -1,7 +1,7 @@
 import { MutationMask, NoFlags, Placement } from './fiberFlags';
 import { FiberNode, FiberRootNode } from './fiber';
 import { HostComponent, HostRoot, HostText } from './workTags';
-import { Container, appendChildToContainer } from './hostConfig';
+import { Container, appendChildToContainer } from 'hostConfig';
 
 let nextEffect: FiberNode | null = null;
 
@@ -88,7 +88,7 @@ function appendPlacementNodeIntoContainer(
 ) {
   // fiber host
   if (finishedWork.tag === HostComponent || finishedWork.tag === HostText) {
-    appendChildToContainer(finishedWork.stateNode, hostParent);
+    appendChildToContainer(hostParent, finishedWork.stateNode);
     return;
   }
 
