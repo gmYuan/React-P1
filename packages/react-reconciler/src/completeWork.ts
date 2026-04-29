@@ -78,7 +78,6 @@ export const completeWork = (wip: FiberNode) => {
       // 1. 构建DOM
       const instance = createTextInstance(newProps.content);
       wip.stateNode = instance;
-      // 2. 将DOM插入到DOM树中
       bubbleProperties(wip);
       return null;
     case HostRoot:

@@ -30,5 +30,14 @@ export default defineConfig({
         )
       }
     ]
+  },
+  build: {
+    sourcemap: true
+  },
+  server: {
+    sourcemapIgnoreList: false
+  },
+  esbuild: {
+    sourcemap: true
   }
 });
