@@ -3,7 +3,7 @@ import { FiberNode } from './fiber';
 import { Dispatch, Dispatcher } from 'react/src/currentDispatcher';
 
 let currentlyRenderingFiber: FiberNode | null = null;
-let workInProgressHook: Hook | null = null;
+const workInProgressHook: Hook | null = null;
 
 const { currentDispatcher } = internals;
 
