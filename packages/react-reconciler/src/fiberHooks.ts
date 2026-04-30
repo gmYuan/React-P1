@@ -1,9 +1,17 @@
 import internals from 'shared/internals';
 import { FiberNode } from './fiber';
 import { Dispatch, Dispatcher } from 'react/src/currentDispatcher';
+import {
+  createUpdate,
+  createUpdateQueue,
+  enqueueUpdate,
+  UpdateQueue
+} from './updateQueue';
+import { Action } from 'shared/ReactTypes';
+import { scheduleUpdateOnFiber } from './workLoop';
 
 let currentlyRenderingFiber: FiberNode | null = null;
-const workInProgressHook: Hook | null = null;
+let workInProgressHook: Hook | null = null;
 
 const { currentDispatcher } = internals;
 
@@ -43,5 +51,56 @@ const HooksDispatcherOnMount: Dispatcher = {
 function mountState<State>(
   initialState: (() => State) | State
 ): [State, Dispatch<State>] {
-  // todo
+  // 找到当前useState对应的hook数据
+  const hook = mountWorkInProgressHook();
+  let memoizedState;
+  if (initialState instanceof Function) {
+    memoizedState = initialState();
+  } else {
+    memoizedState = initialState;
+  }
+
+  const queue = createUpdateQueue<State>();
+  hook.updateQueue = queue;
+  hook.memoizedState = memoizedState;
+
+  // @ts-ignore
+  const dispatch = dispatchSetState.bind(null, currentlyRenderingFiber, queue);
+  queue.dispatch = dispatch;
+
+  return [memoizedState, dispatch] as [State, Dispatch<State>];
+}
+
+function mountWorkInProgressHook(): Hook {
+  const hook: Hook = {
+    memoizedState: null,
+    updateQueue: null,
+    next: null
+  };
+
+  if (workInProgressHook === null) {
+    // mount时 第一个hook
+    if (currentlyRenderingFiber === null) {
+      throw new Error('请在函数组件内调用hook');
+    } else {
+      workInProgressHook = hook;
+      currentlyRenderingFiber.memoizedState = workInProgressHook;
+    }
+  } else {
+    // mount时 后续的hook
+    workInProgressHook.next = hook;
+    workInProgressHook = hook;
+  }
+
+  return workInProgressHook;
+}
+
+function dispatchSetState<State>(
+  fiber: FiberNode,
+  updateQueue: UpdateQueue<State>,
+  action: Action<State>
+) {
+  const update = createUpdate(action);
+  enqueueUpdate(updateQueue, update);
+  scheduleUpdateOnFiber(fiber);
 }
