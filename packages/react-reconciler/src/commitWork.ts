@@ -94,7 +94,7 @@ function commitDeletion(childToDelete: FiberNode) {
         }
         return;
       case FunctionComponent:
-        // Todo useEffect unmount
+        // Todo useEffect unmount 解绑ref
         return;
       default:
         if (__DEV__) {
@@ -107,7 +107,7 @@ function commitDeletion(childToDelete: FiberNode) {
   if (rootHostNode !== null) {
     // 找到待删除子树的根节点的 parent DOM
     const hostParent = getHostParent(childToDelete) as Container;
-    removeChild(rootHostNode, hostParent);
+    removeChild((rootHostNode as FiberNode).stateNode, hostParent);
   }
 
   childToDelete.return = null;
