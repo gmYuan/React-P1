@@ -44,6 +44,8 @@ export function renderWithHooks(wip: FiberNode) {
 
   // 重置操作
   currentlyRenderingFiber = null;
+  workInProgressHook = null;
+  currentHook = null;
   return children;
 }
 
@@ -66,6 +68,8 @@ function updateState<State>() {
   if (pending !== null) {
     const { memoizedState } = processUpdateQueue(hook.memoizedState, pending);
     hook.memoizedState = memoizedState;
+    // 已处理完本次更新，清空队列，避免后续渲染重复消费
+    queue.shared.pending = null;
   }
 
   return [hook.memoizedState, queue.dispatch as Dispatch<State>];
