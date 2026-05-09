@@ -23,6 +23,8 @@ export class FiberNode {
   subtreeFlags: Flags;
   updateQueue: unknown;
   deletions: FiberNode[] | null;
+  // ygm调试用
+  __ygmIsWIP: boolean | null;
 
   constructor(tag: WorkTag, pendingProps: Props, key: Key) {
     // 实例
@@ -52,6 +54,9 @@ export class FiberNode {
     this.flags = NoFlags;
     this.subtreeFlags = NoFlags;
     this.deletions = null;
+
+    // ygm调试用
+    this.__ygmIsWIP = null;
   }
 }
 
@@ -94,6 +99,9 @@ export const createWorkInProgress = (
   wip.child = current.child;
   wip.memoizedProps = current.memoizedProps;
   wip.memoizedState = current.memoizedState;
+  // ygm调试用
+  wip.__ygmIsWIP = true;
+  wip.alternate.__ygmIsWIP = false;
 
   return wip;
 };

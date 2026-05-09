@@ -2,20 +2,25 @@ import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 
 function App() {
-  const [mode, setMode] = useState('div');
+  const [mode, setMode] = useState('child');
   const [count, setCount] = useState(0);
+  let jsx = null;
 
   // 直接暴露 setState 函数，避免闭包问题
   (window as any).setCount = setCount;
   (window as any).setMode = setMode;
 
   if (mode === 'child') {
-    return <Child count={count} />;
+    jsx = <Child count={count} />;
+  } else if (mode === 'text') {
+    return `我是text里的值：${count}`;
+  } else if (mode === 'h1') {
+    return <h1>{`我是h1的值：${count}`}</h1>;
+  } else {
+    return <section>{`我是section的值：${count}`}</section>;
   }
-  if (mode === 'text') {
-    return <a>{`我是text里的值：${count}`}</a>;
-  }
-  return <div>{`我是首屏渲染的值：${count}`}</div>;
+
+  return <div>{jsx}</div>;
 }
 
 //  {/* <span>我是Child内容</span> */}
