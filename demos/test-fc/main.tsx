@@ -20,10 +20,9 @@ function App() {
     return <section>{`我是section的值：${count}`}</section>;
   }
 
-  return <div>{jsx}</div>;
+  return <div onClick={() => setCount(count + 1)}>{jsx}</div>;
 }
 
-//  {/* <span>我是Child内容</span> */}
 function Child({ count }: { count: number }) {
   return (
     <p>

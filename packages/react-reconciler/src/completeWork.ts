@@ -68,11 +68,15 @@ export const completeWork = (wip: FiberNode) => {
   switch (wip.tag) {
     case HostComponent:
       if (current !== null && wip.stateNode) {
-        // todo update
+        // update
+        // 1. props是否变化 {onclick: xx} {onclick: xxx}
+        // 2．变了 update flag
+        // className style
+        // updateFiberProps(wip.stateNode, newProps);
+        markUpdate(wip);
       } else {
         // 1. 构建DOM
-        // const instance = createInstance(wip.type, newProps); // 先不透传 props，按单参调用
-        const instance = createInstance(wip.type);
+        const instance = createInstance(wip.type, newProps);
         // 2. 将DOM插入到DOM树中
         appendAllChildren(instance, wip);
         wip.stateNode = instance;
