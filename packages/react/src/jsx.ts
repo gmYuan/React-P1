@@ -1,4 +1,4 @@
-import { REACT_ELEMENT_TYPE } from 'shared/ReactSymbols';
+import { REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE } from 'shared/ReactSymbols';
 import {
   Type,
   Key,
@@ -8,8 +8,10 @@ import {
   ElementType
 } from 'shared/ReactTypes';
 
-// ReactElement
+// Fragment
+export const Fragment = REACT_FRAGMENT_TYPE;
 
+// ReactElement
 const ReactElement = function (
   type: Type,
   key: Key,
