@@ -117,7 +117,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
     newChild: any[]
   ) {
     // 最后一个可复用 Fiber 在 current 中的 index
-    let lastPlacedIndex: number = 0;
+    let lastPlacedIndex = 0;
     // 创建的第一个新 Fiber
     let firstNewFiber: FiberNode | null = null;
     // 创建的最后一个新 Fiber
