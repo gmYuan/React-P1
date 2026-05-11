@@ -203,10 +203,10 @@ function ChildReconciler(shouldTrackEffects: boolean) {
     index: number,
     element: any
   ): FiberNode | null {
-  const keyToUse =
-    typeof element === 'object' && element !== null && element.key != null
-      ? element.key
-      : index.toString();
+    const keyToUse =
+      typeof element === 'object' && element !== null && element.key != null
+        ? element.key
+        : index.toString();
     const before = existingChildren.get(keyToUse);
 
     // HostText
