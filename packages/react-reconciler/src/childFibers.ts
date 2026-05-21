@@ -51,15 +51,21 @@ function ChildReconciler(shouldTrackEffects: boolean) {
       if (currentFiber.key === key) {
         // key相同
         if (element.$$typeof === REACT_ELEMENT_TYPE) {
-          if (currentFiber.type === element.type) {
-            //type 相同
+          // const isSameType =
+          //   currentFiber.type === element.type ||
+          //   (element.type === REACT_FRAGMENT_TYPE &&
+          //     currentFiber.tag === Fragment);
+
+          const isSameType = currentFiber.type === element.type;
+          if (isSameType) {
+            // type 相同
             // 处理 Fragment 的情况
             let props: Props = element.props;
             if (element.type === REACT_FRAGMENT_TYPE) {
               props = element.props.children;
             }
 
-            const existing = useFiber(currentFiber, element.props);
+            const existing = useFiber(currentFiber, props);
             existing.return = returnFiber;
             // 当前节点可复用，标记剩下的节点删除
             deleteRemainingChildren(returnFiber, currentFiber.sibling);
@@ -84,7 +90,6 @@ function ChildReconciler(shouldTrackEffects: boolean) {
     // 根据 element 创建fiber
     let fiber;
     if (element.type === REACT_FRAGMENT_TYPE) {
-      // todo
       fiber = createFiberFromFragment(element.props.children, element.key);
     } else {
       fiber = createFiberFromElement(element);
@@ -129,6 +134,16 @@ function ChildReconciler(shouldTrackEffects: boolean) {
     currentFirstChild: FiberNode | null,
     newChild: any[]
   ) {
+    /**
+     * lastPlacedIndex 本质是："到目前为止，已经确认不用移动的节点中，在旧列表里的最大位置"
+     *
+     * 如果后面遇到的节点，它在旧列表的位置比这个还小，说明：
+     *
+     * 它原本在前面
+     * 现在要排到后面（因为是以 newChild为基准，从左到右/新从前向后 遍历处理的）
+     * 相对顺序倒退了，必须移动
+     * 反过来，如果它位置更大，说明相对顺序还是递增的，可以不动。
+     */
     // 最后一个可复用 Fiber 在 current 中的 index
     let lastPlacedIndex = 0;
     // 创建的第一个新 Fiber

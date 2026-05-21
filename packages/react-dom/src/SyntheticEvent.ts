@@ -46,6 +46,7 @@ export function initEvent(container: Container, eventType: string) {
 }
 
 function dispatchEvent(container: Container, eventType: string, e: Event) {
+  // todo 待触发时再进行 逻辑整理
   const targetElement = e.target;
   if (targetElement == null) {
     console.warn('事件不存在targetElement', e);

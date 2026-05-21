@@ -7,6 +7,10 @@ function App() {
   const [count, setCount] = useState(0);
   let jsx = null;
 
+  // 直接暴露 setState 函数，避免闭包问题
+  (window as any).setCount = setCount;
+  (window as any).setMode = setMode;
+
   // fragment1
   if (mode === 'fg1') {
     return (
@@ -35,14 +39,24 @@ function App() {
   if (mode === 'fg3') {
     const arr =
       count % 2 === 0
-        ? [<li key="1">1</li>, <li key="2">2</li>, <li key="3">3</li>]
-        : [<li key="3">3</li>, <li key="2">2</li>, <li key="1">1</li>];
+        ? [<li key="4">4</li>, <li key="5">5</li>, <li key="6">6</li>]
+        : [
+            <li key="5">5</li>,
+            <li key="4">4</li>,
+            <li key="6">6</li>,
+            <li key="7">7</li>
+          ];
     return (
-      <ul onClickCapture={() => setCount(count + 1)}>
-        <li>4</li>
-        <li>5</li>
-        {arr}
-      </ul>
+      <>
+        <ul onClickCapture={() => setCount(count + 1)}>
+          <>
+            <li>1</li>
+          </>
+          <li>2</li>
+          <li>3</li>
+          {arr}
+        </ul>
+      </>
     );
   }
 
