@@ -30,10 +30,14 @@ const ReactElement = function (
 };
 
 // jsxDEV 方法（开发环境）
-export const jsxDEV = (type: ElementType, config: any) => {
+export const jsxDEV = (type: ElementType, config: any, maybeKey?: Key) => {
   let key: Key = null;
   const props: Props = {};
   let ref: Ref = null;
+
+  if (maybeKey !== undefined) {
+    key = '' + maybeKey;
+  }
 
   // 处理 config 中的属性
   for (const prop in config) {
