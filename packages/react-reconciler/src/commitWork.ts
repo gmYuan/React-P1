@@ -135,7 +135,7 @@ function commitDeletion(childToDelete: FiberNode) {
     const hostParent = getHostParent(childToDelete);
     if (hostParent !== null) {
       rootChildrenToDelete.forEach((node) => {
-        removeChild(node.stateNode, hostParent);
+        removeChild(hostParent, node.stateNode);
       });
     }
   }
@@ -185,7 +185,7 @@ const commitPlacement = (finishedWork: FiberNode) => {
 
   // finishedWork ~~ DOM append parent DOM
   if (hostParent !== null) {
-    insertOrAppendPlacementNodeIntoContainer(finishedWork, hostParent, sibling);
+    insertOrAppendPlacementNodeIntoContainer(hostParent, finishedWork, sibling);
   }
 };
 
@@ -253,15 +253,15 @@ function getHostParent(fiber: FiberNode): Container | null {
 }
 
 function insertOrAppendPlacementNodeIntoContainer(
-  finishedWork: FiberNode,
   hostParent: Container,
+  finishedWork: FiberNode,
   before?: Instance
 ) {
   // fiber host
   if (finishedWork.tag === HostComponent || finishedWork.tag === HostText) {
     if (before) {
       // 执行移动操作
-      insertChildToContainer(finishedWork.stateNode, hostParent, before);
+      insertChildToContainer(hostParent, finishedWork.stateNode, before);
     } else {
       // 执行插入操作
       appendChildToContainer(hostParent, finishedWork.stateNode);
@@ -271,11 +271,11 @@ function insertOrAppendPlacementNodeIntoContainer(
 
   const child = finishedWork.child;
   if (child !== null) {
-    insertOrAppendPlacementNodeIntoContainer(child, hostParent);
+    insertOrAppendPlacementNodeIntoContainer(hostParent, child, before);
     let sibling = child.sibling;
 
     while (sibling !== null) {
-      insertOrAppendPlacementNodeIntoContainer(sibling, hostParent);
+      insertOrAppendPlacementNodeIntoContainer(hostParent, sibling, before);
       sibling = sibling.sibling;
     }
   }

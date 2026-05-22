@@ -37,23 +37,18 @@ function App() {
 
   // fragment3
   if (mode === 'fg3') {
+    const text1Or20 = count % 2 === 0 ? 1 : 20;
     const arr =
       count % 2 === 0
         ? [<li key="4">4</li>, <li key="5">5</li>, <li key="6">6</li>]
-        : [
-            <li key="5">5</li>,
-            <li key="4">4</li>,
-            <li key="6">6</li>,
-            <li key="7">7</li>
-          ];
+        : [<li key="7">7</li>];
     return (
       <>
         <ul onClickCapture={() => setCount(count + 1)}>
           <>
-            <li>1</li>
+            <li>{text1Or20}</li>
           </>
           <li>2</li>
-          <li>3</li>
           {arr}
         </ul>
       </>

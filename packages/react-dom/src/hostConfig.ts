@@ -25,7 +25,12 @@ export const createTextInstance = (content: string) => {
   return document.createTextNode(content);
 };
 
-export const appendChildToContainer = appendInitialChild;
+export const appendChildToContainer = (
+  container: Container,
+  child: Instance | TextInstance
+) => {
+  container.appendChild(child);
+};
 
 export const commitUpdate = (fiber: FiberNode) => {
   switch (fiber.tag) {
@@ -52,15 +57,15 @@ export const commitTextUpdate = (
 };
 
 export const removeChild = (
-  child: Instance | TextInstance,
-  container: Container
+  container: Container,
+  child: Instance | TextInstance
 ) => {
   container.removeChild(child);
 };
 
 export const insertChildToContainer = (
-  child: Instance,
   container: Container,
+  child: Instance,
   before: Instance
 ) => {
   container.insertBefore(child, before);

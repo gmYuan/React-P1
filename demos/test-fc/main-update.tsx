@@ -1,8 +1,9 @@
+// 多节点 DOM-diff
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 
 function App() {
-  const [mode, setMode] = useState('child');
+  const [mode, setMode] = useState('fg3');
   const [count, setCount] = useState(0);
   let jsx = null;
 
@@ -10,17 +11,82 @@ function App() {
   (window as any).setCount = setCount;
   (window as any).setMode = setMode;
 
-  if (mode === 'child') {
-    jsx = <Child count={count} />;
-  } else if (mode === 'text') {
-    return `我是text里的值：${count}`;
-  } else if (mode === 'h1') {
-    return <h1>{`我是h1的值：${count}`}</h1>;
-  } else {
-    return <section>{`我是section的值：${count}`}</section>;
+  // fragment1
+  if (mode === 'fg1') {
+    return (
+      <>
+        <div />
+        <div />
+      </>
+    );
   }
 
-  return <div onClick={() => setCount(count + 1)}>{jsx}</div>;
+  // fragment2
+  if (mode === 'fg2') {
+    return (
+      <ul>
+        <>
+          <li>1</li>
+          <li>2</li>
+        </>
+        <li>3</li>
+        <li>4</li>
+      </ul>
+    );
+  }
+
+  // fragment3
+  if (mode === 'fg3') {
+    const text1Or20 = count % 2 === 0 ? 1 : 20;
+    const arr =
+      count % 2 === 0
+        ? [<li key="4">4</li>, <li key="5">5</li>, <li key="6">6</li>]
+        : [
+            <li key="5">5</li>,
+            <li key="4">4</li>,
+            <li key="6">6</li>,
+            <li key="7">7</li>
+          ];
+    return (
+      <>
+        <ul onClickCapture={() => setCount(count + 1)}>
+          <>
+            <li>{text1Or20}</li>
+          </>
+          <li>2</li>
+          <li>3</li>
+          {arr}
+        </ul>
+      </>
+    );
+  }
+
+  // ul
+  if (mode === 'ul') {
+    const arr =
+      count % 2 === 0
+        ? [<li key="1">1</li>, <li key="2">2</li>, <li key="3">3</li>]
+        : [<li key="3">3</li>, <li key="2">2</li>, <li key="1">1</li>];
+    return <ul onClickCapture={() => setCount(count + 1)}>{arr}</ul>;
+  }
+
+  // text
+  if (mode === 'text') {
+    return `我是text里的值：${count}`;
+  }
+
+  // h1
+  if (mode === 'h1') {
+    return <h1>{`我是h1的值：${count}`}</h1>;
+  }
+  // Child
+  if (mode === 'child') {
+    jsx = <Child count={count} />;
+    return <div onClick={() => setCount(count + 1)}>{jsx}</div>;
+  }
+
+  // 兜底
+  return <section>{`我是section的值：${count}`}</section>;
 }
 
 function Child({ count }: { count: number }) {
@@ -34,36 +100,3 @@ function Child({ count }: { count: number }) {
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <App />
 );
-
-// import { useState } from 'react';
-// import ReactDOM from 'react-dom/client';
-
-// // function App() {
-// //   return (
-// //     <div>
-// //       <Child />
-// //     </div>
-// //   );
-// // }
-
-// console.log(import.meta.hot);
-
-// function App() {
-//   const [num, setNum] = useState(100);
-//   window.setNum = setNum;
-//   return num === 3 ? <Child /> : <div>{num}</div>;
-// }
-
-// function APP() {}
-
-// function Child() {
-//   return (
-//     <p>
-//       <span>I'm a child1</span>
-//     </p>
-//   );
-// }
-
-// ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-//   <App />
-// );
