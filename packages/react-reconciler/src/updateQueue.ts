@@ -3,6 +3,7 @@ import { Dispatch } from 'react/src/currentDispatcher';
 
 export interface Update<State> {
   action: Action<State>;
+  next: Update<any> | null;
 }
 
 export interface UpdateQueue<State> {
@@ -14,7 +15,8 @@ export interface UpdateQueue<State> {
 
 export const createUpdate = <State>(action: Action<State>): Update<State> => {
   return {
-    action
+    action,
+    next: null
   };
 };
 
@@ -31,6 +33,20 @@ export const enqueueUpdate = <State>(
   updateQueue: UpdateQueue<State>,
   update: Update<State>
 ) => {
+  const pending = updateQueue.shared.pending;
+  if (pending === null) {
+    // pending = a -> a
+    update.next = update;
+  } else {
+    // pending = b -> a -> b
+    // c.next = b.next
+    update.next = pending.next;
+    // b.next = c
+    pending.next = update;
+  }
+  // pending 指向 update 环状链表的最后一个节点
+  // 尾节点.next 永远指向头节点
+  // pending = c -> a -> b -> c
   updateQueue.shared.pending = update;
 };
 
