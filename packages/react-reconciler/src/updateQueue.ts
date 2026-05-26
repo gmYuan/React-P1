@@ -15,7 +15,10 @@ export interface UpdateQueue<State> {
   dispatch: Dispatch<State> | null;
 }
 
-export const createUpdate = <State>(action: Action<State>, lane: Lane): Update<State> => {
+export const createUpdate = <State>(
+  action: Action<State>,
+  lane: Lane
+): Update<State> => {
   return {
     action,
     next: null,
