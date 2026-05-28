@@ -12,7 +12,10 @@ import { mountChildFibers, reconcileChildFibers } from './childFibers';
 import { renderWithHooks } from './fiberHooks';
 
 // 递归中的递阶段
-export const beginWork = (wip: FiberNode, renderLane: Lane): FiberNode | null => {
+export const beginWork = (
+  wip: FiberNode,
+  renderLane: Lane
+): FiberNode | null => {
   // 比较,返回子fiberNode
   switch (wip.tag) {
     case HostRoot:

@@ -70,7 +70,11 @@ function updateState<State>() {
   const pending = queue.shared.pending;
 
   if (pending !== null) {
-    const { memoizedState } = processUpdateQueue(hook.memoizedState, pending, renderLane);
+    const { memoizedState } = processUpdateQueue(
+      hook.memoizedState,
+      pending,
+      renderLane
+    );
     hook.memoizedState = memoizedState;
     // 已处理完本次更新，清空队列，避免后续渲染重复消费
     queue.shared.pending = null;
