@@ -1,3 +1,5 @@
+import { FiberRootNode } from './fiber';
+
 // 代表 update 的优先级
 export type Lane = number;
 // 代表 lane 的集合
@@ -35,4 +37,8 @@ export function getHighestPriorityLane(lanes: Lanes): Lane {
   //    -lanes =         A' 1 0 ... 0
   //     结果为           0  1 0 ... 0
   return lanes & -lanes;
+}
+
+export function markRootFinished(root: FiberRootNode, lane: Lane) {
+  root.pendingLanes &= ~lane;
 }

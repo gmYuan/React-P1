@@ -12,17 +12,17 @@ import { mountChildFibers, reconcileChildFibers } from './childFibers';
 import { renderWithHooks } from './fiberHooks';
 
 // 递归中的递阶段
-export const beginWork = (wip: FiberNode): FiberNode | null => {
+export const beginWork = (wip: FiberNode, renderLane: Lane): FiberNode | null => {
   // 比较,返回子fiberNode
   switch (wip.tag) {
     case HostRoot:
-      return updateHostRoot(wip);
+      return updateHostRoot(wip, renderLane);
     case HostComponent:
       return updateHostComponent(wip);
     case HostText:
       return null;
     case FunctionComponent:
-      return updateFunctionComponent(wip);
+      return updateFunctionComponent(wip, renderLane);
     case Fragment:
       return updateFragment(wip);
     default:
@@ -34,7 +34,7 @@ export const beginWork = (wip: FiberNode): FiberNode | null => {
   return null;
 };
 
-function updateHostRoot(wip: FiberNode) {
+function updateHostRoot(wip: FiberNode, renderLane: Lane) {
   // 根据当前节点和工作中节点的状态进行比较，处理属性等更新逻辑
   const baseState = wip.memoizedState;
   const updateQueue = wip.updateQueue as UpdateQueue<Element>;
@@ -42,7 +42,7 @@ function updateHostRoot(wip: FiberNode) {
   // 清空更新链表
   updateQueue.shared.pending = null;
   // 计算待更新状态的最新值
-  const { memoizedState } = processUpdateQueue(baseState, pending);
+  const { memoizedState } = processUpdateQueue(baseState, pending, renderLane);
   wip.memoizedState = memoizedState;
   // 处理子节点的更新逻辑
   const nextChildren = wip.memoizedState;
@@ -58,8 +58,8 @@ function updateHostComponent(wip: FiberNode) {
   return wip.child;
 }
 
-function updateFunctionComponent(wip: FiberNode) {
-  const nextChildren = renderWithHooks(wip);
+function updateFunctionComponent(wip: FiberNode, renderLane: Lane) {
+  const nextChildren = renderWithHooks(wip, renderLane);
   reconcileChildren(wip, nextChildren);
   return wip.child;
 }

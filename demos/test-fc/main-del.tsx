@@ -3,7 +3,7 @@ import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 
 function App() {
-  const [mode, setMode] = useState('h1');
+  const [mode, setMode] = useState('fg3');
   const [count, setCount] = useState(0);
   let jsx = null;
 
@@ -71,15 +71,7 @@ function App() {
 
   // h1
   if (mode === 'h1') {
-    return (
-      <h1
-        onClickCapture={() => {
-          setCount((v) => v + 1);
-          setCount((v) => v + 1);
-          setCount((v) => v + 1);
-        }}
-      >{`我是h1的值：${count}`}</h1>
-    );
+    return <h1>{`我是h1的值：${count}`}</h1>;
   }
   // Child
   if (mode === 'child') {
