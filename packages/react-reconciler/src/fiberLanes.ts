@@ -20,3 +20,19 @@ export function requestUpdateLanes() {
   // return lane;
   return SyncLane;
 }
+
+// 获取 lanes 中优先级最高的 lane
+export function getHighestPriorityLane(lanes: Lanes): Lane {
+  // 默认规则：数值越小，优先级越高
+  // 原理是 因为 负数在计算机中是补码表示，即 二进制的 取反 + 1
+  // 假设 lanes =         A  1 0 ... 0
+  // 那么 -lanes 先取反 =  A' 0 1 ... 1
+  //            再加 1 =  0  0 0 ... 1
+  // 即-lanes 为          A' 1 0 ... 0
+
+  // 最后再 与运算，即：
+  // 即  lanes =         A  1 0 ... 0
+  //    -lanes =         A' 1 0 ... 0
+  //     结果为           0  1 0 ... 0
+  return lanes & -lanes;
+}
