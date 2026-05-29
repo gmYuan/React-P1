@@ -100,8 +100,6 @@ function mountEffect(create: EffectCallback | void, deps: EffectDeps | void) {
   );
 }
 
-
-
 function createFCUpdateQueue<State>() {
   const updateQueue = createUpdateQueue<State>() as FCUpdateQueue<State>;
   updateQueue.lastEffect = null;
