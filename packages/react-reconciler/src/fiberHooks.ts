@@ -46,8 +46,12 @@ export interface FCUpdateQueue<State> extends UpdateQueue<State> {
 export function renderWithHooks(wip: FiberNode, lane: Lane) {
   // 赋值操作
   currentlyRenderingFiber = wip;
-  wip.memoizedState = null;
   renderLane = lane;
+
+  // 重置 Hooks 链表
+  wip.memoizedState = null;
+  // 重置 Effect 链表
+  wip.updateQueue = null;
 
   const current = wip.alternate;
 
@@ -78,8 +82,7 @@ const HooksDispatcherOnMount: Dispatcher = {
 
 const HooksDispatcherOnUpdate: Dispatcher = {
   useState: updateState,
-  // todo-code 待实现
-  useEffect: mountEffect
+  useEffect: updateEffect
 };
 
 function mountEffect(create: EffectCallback | void, deps: EffectDeps | void) {
@@ -97,41 +100,7 @@ function mountEffect(create: EffectCallback | void, deps: EffectDeps | void) {
   );
 }
 
-function pushEffect(
-  tag: EffectTags,
-  create: EffectCallback | void,
-  destroy: EffectCallback | void,
-  deps: EffectDeps
-): Effect {
-  const effect: Effect = {
-    tag,
-    create,
-    destroy,
-    deps,
-    next: null
-  };
-  const fiber = currentlyRenderingFiber as FiberNode;
-  const updateQueue = fiber.updateQueue as FCUpdateQueue<any>;
-  if (updateQueue === null) {
-    const newUpdateQueue = createFCUpdateQueue();
-    fiber.updateQueue = newUpdateQueue;
-    effect.next = effect;
-    newUpdateQueue.lastEffect = effect;
-  } else {
-    // 插入 effect
-    const lastEffect = updateQueue.lastEffect;
-    if (lastEffect == null) {
-      effect.next = effect;
-      updateQueue.lastEffect = effect;
-    } else {
-      const firstEffect = lastEffect.next;
-      lastEffect.next = effect;
-      effect.next = firstEffect;
-      updateQueue.lastEffect = effect;
-    }
-  }
-  return effect;
-}
+
 
 function createFCUpdateQueue<State>() {
   const updateQueue = createUpdateQueue<State>() as FCUpdateQueue<State>;
@@ -267,4 +236,84 @@ function dispatchSetState<State>(
   const update = createUpdate(action, lane);
   enqueueUpdate(updateQueue, update);
   scheduleUpdateOnFiber(fiber, lane);
+}
+
+function updateEffect(create: EffectCallback | void, deps: EffectDeps | void) {
+  // 当前正在工作的 useEffect
+  const hook = updateWorkInProgressHook();
+  const nextDeps = deps == undefined ? null : (deps as EffectDeps);
+  let destroy: EffectCallback | void;
+
+  if (currentHook !== null) {
+    const prevEffect = currentHook.memoizedState as Effect;
+    destroy = prevEffect.destroy;
+
+    if (nextDeps !== null) {
+      // 浅比较依赖
+      const prevDeps = prevEffect.deps;
+      // 浅比较，相等
+      if (areHookInputsEqual(nextDeps, prevDeps)) {
+        hook.memoizedState = pushEffect(Passive, create, destroy, nextDeps);
+        return;
+      }
+      // 浅比较，不相等
+      (currentlyRenderingFiber as FiberNode).flags |= PassiveEffect;
+      hook.memoizedState = pushEffect(
+        Passive | HookHasEffect,
+        create,
+        destroy,
+        nextDeps
+      );
+    }
+  }
+}
+
+function areHookInputsEqual(
+  nextDeps: EffectDeps,
+  prevDeps: EffectDeps
+): boolean {
+  if (nextDeps === null || prevDeps === null) return false;
+  for (let i = 0; i < nextDeps.length && i < prevDeps.length; i++) {
+    if (Object.is(nextDeps[i], prevDeps[i])) {
+      continue;
+    }
+    return false;
+  }
+  return true;
+}
+
+function pushEffect(
+  tag: EffectTags,
+  create: EffectCallback | void,
+  destroy: EffectCallback | void,
+  deps: EffectDeps
+): Effect {
+  const effect: Effect = {
+    tag,
+    create,
+    destroy,
+    deps,
+    next: null
+  };
+  const fiber = currentlyRenderingFiber as FiberNode;
+  const updateQueue = fiber.updateQueue as FCUpdateQueue<any>;
+  if (updateQueue === null) {
+    const newUpdateQueue = createFCUpdateQueue();
+    fiber.updateQueue = newUpdateQueue;
+    effect.next = effect;
+    newUpdateQueue.lastEffect = effect;
+  } else {
+    // 插入 effect
+    const lastEffect = updateQueue.lastEffect;
+    if (lastEffect == null) {
+      effect.next = effect;
+      updateQueue.lastEffect = effect;
+    } else {
+      const firstEffect = lastEffect.next;
+      lastEffect.next = effect;
+      effect.next = firstEffect;
+      updateQueue.lastEffect = effect;
+    }
+  }
+  return effect;
 }
