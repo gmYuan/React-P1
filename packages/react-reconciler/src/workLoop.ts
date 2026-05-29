@@ -38,19 +38,21 @@ function markRootUpdated(root: FiberRootNode, lane: Lane) {
 
 // Schedule 阶段入口
 function ensureRootIsScheduled(root: FiberRootNode) {
-  const updateLane = getHighestPriorityLane(root.pendingLanes);
+  const maxPendingLane = getHighestPriorityLane(root.pendingLanes);
 
   // 没有更新了，重置并 return
-  if (updateLane === NoLane) {
+  if (maxPendingLane === NoLane) {
     return;
   }
 
-  if (updateLane === SyncLane) {
+  if (maxPendingLane === SyncLane) {
     // 同步优先级，用微任务调度
     if (__DEV__) {
-      console.log('在微任务中调度，优先级：', updateLane);
+      console.log('在微任务中调度，优先级：', maxPendingLane);
     }
-    scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root, updateLane));
+    scheduleSyncCallback(
+      performSyncWorkOnRoot.bind(null, root, maxPendingLane)
+    );
     scheduleMicroTask(flushSyncCallback);
   } else {
     // 其他优先级，用宏任务调度

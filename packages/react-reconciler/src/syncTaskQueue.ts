@@ -6,8 +6,9 @@ let isFlushingSyncQueue = false;
 export function scheduleSyncCallback(callback: (...args: any) => void) {
   if (syncQueue === null) {
     syncQueue = [callback];
+  } else {
+    syncQueue.push(callback);
   }
-  syncQueue.push(callback);
 }
 
 // 遍历执行同步的回调函数

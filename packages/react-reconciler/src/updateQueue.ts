@@ -75,7 +75,7 @@ export const processUpdateQueue = <State>(
       if (updateLane === renderLane) {
         // baseState 1 update 2 -> memoizedState 2
         // baseState 1 update (x) => 4x -> memoizedState 4
-        const action = pendingUpdate.action;
+        const action = pending.action;
         if (action instanceof Function) {
           baseState = action(baseState);
         } else {
