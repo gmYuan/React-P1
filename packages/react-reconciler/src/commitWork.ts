@@ -26,6 +26,9 @@ import {
 import { Effect, FCUpdateQueue } from './fiberHooks';
 import { EffectTags, HookHasEffect } from './hookEffectTags';
 
+import { Effect, FCUpdateQueue } from './fiberHooks';
+import { EffectTags, HookHasEffect } from './hookEffectTags';
+
 let nextEffect: FiberNode | null = null;
 
 export const commitMutationEffects = (

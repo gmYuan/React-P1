@@ -30,6 +30,12 @@ import {
 } from 'scheduler';
 import { HookHasEffect, Passive } from './hookEffectTags';
 
+// 注意：scheduler 是 CJS 包，Vite dev 对“多行具名导入”的 CJS interop 改写会破坏
+// source map（导致断点行错位）。保持单行导入可避免该问题。
+import { unstable_scheduleCallback as scheduleCallback } from 'scheduler';
+import { unstable_NormalPriority as NormalPriority } from 'scheduler';
+import { HookHasEffect, Passive } from './hookEffectTags';
+
 let workInProgress: FiberNode | null = null;
 
 let wipRootRenderLane: Lane = NoLane;
