@@ -254,15 +254,15 @@ function updateEffect(create: EffectCallback | void, deps: EffectDeps | void) {
         hook.memoizedState = pushEffect(Passive, create, destroy, nextDeps);
         return;
       }
-      // 浅比较，不相等
-      (currentlyRenderingFiber as FiberNode).flags |= PassiveEffect;
-      hook.memoizedState = pushEffect(
-        Passive | HookHasEffect,
-        create,
-        destroy,
-        nextDeps
-      );
     }
+    // deps 为空(每次都触发) 或 deps 变化
+    (currentlyRenderingFiber as FiberNode).flags |= PassiveEffect;
+    hook.memoizedState = pushEffect(
+      Passive | HookHasEffect,
+      create,
+      destroy,
+      nextDeps
+    );
   }
 }
 
@@ -271,7 +271,8 @@ function areHookInputsEqual(
   prevDeps: EffectDeps
 ): boolean {
   if (nextDeps === null || prevDeps === null) return false;
-  for (let i = 0; i < nextDeps.length && i < prevDeps.length; i++) {
+  if (nextDeps.length !== prevDeps.length) return false;
+  for (let i = 0; i < nextDeps.length; i++) {
     if (Object.is(nextDeps[i], prevDeps[i])) {
       continue;
     }
