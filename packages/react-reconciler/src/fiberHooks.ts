@@ -113,7 +113,7 @@ function pushEffect(
   const fiber = currentlyRenderingFiber as FiberNode;
   const updateQueue = fiber.updateQueue as FCUpdateQueue<any>;
   if (updateQueue === null) {
-    const newUpdateQueue = creactFCUpdateQueue();
+    const newUpdateQueue = createFCUpdateQueue();
     fiber.updateQueue = newUpdateQueue;
     effect.next = effect;
     newUpdateQueue.lastEffect = effect;
@@ -133,7 +133,7 @@ function pushEffect(
   return effect;
 }
 
-function creactFCUpdateQueue<State>() {
+function createFCUpdateQueue<State>() {
   const updateQueue = createUpdateQueue<State>() as FCUpdateQueue<State>;
   updateQueue.lastEffect = null;
   return updateQueue;
