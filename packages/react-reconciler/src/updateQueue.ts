@@ -2,10 +2,13 @@ import { Action } from 'shared/ReactTypes';
 import { Dispatch } from 'react/src/currentDispatcher';
 import { Lane } from './fiberLanes';
 
+let __YgmUpdateIndex = 0;
+
 export interface Update<State> {
   action: Action<State>;
   next: Update<any> | null;
   lane: Lane;
+  __YgmUpdateIndex: number;
 }
 
 export interface UpdateQueue<State> {
@@ -22,7 +25,8 @@ export const createUpdate = <State>(
   return {
     action,
     next: null,
-    lane
+    lane,
+    __YgmUpdateIndex: __YgmUpdateIndex++
   };
 };
 
