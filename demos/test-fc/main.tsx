@@ -9,6 +9,10 @@ export default function App() {
 
   useEffect(() => {
     console.log('num change create创建了', num);
+    // if (num === 0) {
+    //   updateNum(1); // 在 effect 里触发新更新
+    // }
+
     return () => {
       console.log('num change destroy销毁了', num);
     };
