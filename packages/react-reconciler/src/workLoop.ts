@@ -1,9 +1,19 @@
-import { FiberNode, FiberRootNode, createWorkInProgress } from './fiber';
+import {
+  FiberNode,
+  FiberRootNode,
+  PendingPassiveEffects,
+  createWorkInProgress
+} from './fiber';
 import { beginWork } from './beginWork';
 import { completeWork } from './completeWork';
 import { HostRoot } from './workTags';
-import { MutationMask, NoFlags } from './fiberFlags';
-import { commitMutationEffects } from './commitWork';
+import { MutationMask, NoFlags, PassiveMask } from './fiberFlags';
+import {
+  commitHookEffectListCreate,
+  commitHookEffectListDestory,
+  commitHookEffectListUnmount,
+  commitMutationEffects
+} from './commitWork';
 import {
   getHighestPriorityLane,
   Lane,
@@ -15,9 +25,17 @@ import {
 import { flushSyncCallback, scheduleSyncCallback } from './syncTaskQueue';
 import { scheduleMicroTask } from 'hostConfig';
 
+import {
+  unstable_scheduleCallback as scheduleCallback,
+  unstable_NormalPriority as NormalPriority
+} from 'scheduler';
+import { HookHasEffect, Passive } from './hookEffectTags';
+
 let workInProgress: FiberNode | null = null;
 
 let wipRootRenderLane: Lane = NoLane;
+
+let rootDoesHasPassiveEffects = false;
 
 function prepareFreshStack(root: FiberRootNode, lane: Lane) {
   workInProgress = createWorkInProgress(root.current, {});
