@@ -35,7 +35,7 @@ let workInProgress: FiberNode | null = null;
 
 let wipRootRenderLane: Lane = NoLane;
 
-let rootDoesHasPassiveEffects = false;
+const rootDoesHasPassiveEffects = false;
 
 function prepareFreshStack(root: FiberRootNode, lane: Lane) {
   workInProgress = createWorkInProgress(root.current, {});
