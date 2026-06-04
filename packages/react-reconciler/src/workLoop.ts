@@ -10,7 +10,7 @@ import { HostRoot } from './workTags';
 import { MutationMask, NoFlags, PassiveMask } from './fiberFlags';
 import {
   commitHookEffectListCreate,
-  commitHookEffectListDestory,
+  commitHookEffectListDestroy,
   commitHookEffectListUnmount,
   commitMutationEffects
 } from './commitWork';
@@ -236,7 +236,7 @@ function flushPassiveEffects(
   // 再触发所有上次更新的 destroy
   pendingPassiveEffects.update.forEach((effect) => {
     didFlushPassiveEffect = true;
-    commitHookEffectListDestory(Passive | HookHasEffect, effect);
+    commitHookEffectListDestroy(Passive | HookHasEffect, effect);
   });
 
   // 再触发所有这次更新的 create

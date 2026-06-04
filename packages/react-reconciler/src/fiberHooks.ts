@@ -33,6 +33,7 @@ export interface Effect {
   destroy: EffectCallback | void;
   deps: EffectDeps;
   next: Effect | null;
+  ygm_effectIdx: number;
 }
 
 type EffectCallback = () => void;
@@ -281,6 +282,8 @@ function areHookInputsEqual(
   return true;
 }
 
+let ygm_effectIdx = 0;
+
 function pushEffect(
   tag: EffectTags,
   create: EffectCallback | void,
@@ -292,7 +295,8 @@ function pushEffect(
     create,
     destroy,
     deps,
-    next: null
+    next: null,
+    ygm_effectIdx: ygm_effectIdx++
   };
   const fiber = currentlyRenderingFiber as FiberNode;
   const updateQueue = fiber.updateQueue as FCUpdateQueue<any>;

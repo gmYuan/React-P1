@@ -353,7 +353,7 @@ export function commitHookEffectListUnmount(
 }
 
 // 组件卸载时，触发所有上次更新的 destroy
-export function commitHookEffectListDestory(
+export function commitHookEffectListDestroy(
   tags: EffectTags,
   lastEffect: Effect
 ) {
