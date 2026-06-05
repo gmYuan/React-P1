@@ -1,15 +1,24 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const { defaults } = require('jest-config');
 
 module.exports = {
   ...defaults,
   rootDir: process.cwd(),
+  // 寻找测试用例忽略的文件夹
   modulePathIgnorePatterns: ['<rootDir>/.history'],
+  // 依赖包的解析地址
   moduleDirectories: [
-    // 对于 React ReactDOM
+    // React 和 ReactDOM 包的地址
     'dist/node_modules',
-    // 对于第三方依赖
+    // 第三方依赖的地址
     ...defaults.moduleDirectories
   ],
-  testEnvironment: 'jsdom'
+  testEnvironment: 'jsdom',
+  moduleNameMapper: {
+    '^scheduler$': '<rootDir>/node_modules/scheduler/unstable_mock.js'
+  },
+  fakeTimers: {
+    enableGlobally: true,
+    legacyFakeTimers: true
+  },
+  setupFilesAfterEnv: ['./scripts/jest/setupJest.js']
 };
