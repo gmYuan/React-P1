@@ -127,7 +127,9 @@ export const createWorkInProgress = (
   wip.memoizedState = current.memoizedState;
   // ygm调试用
   wip.__ygmIsWIP = true;
-  wip.alternate.__ygmIsWIP = false;
+  if (wip.alternate !== null) {
+    wip.alternate.__ygmIsWIP = false;
+  }
 
   return wip;
 };

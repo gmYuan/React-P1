@@ -9,6 +9,7 @@ import {
 import {
   appendInitialChild,
   Container,
+  Instance,
   createInstance,
   createTextInstance
 } from 'hostConfig';
@@ -19,7 +20,7 @@ function markUpdate(workInProgress: FiberNode) {
   workInProgress.flags |= Update;
 }
 
-function appendAllChildren(parent: Container, wip: FiberNode) {
+function appendAllChildren(parent: Container | Instance, wip: FiberNode) {
   let node = wip.child;
 
   while (node !== null) {
@@ -73,7 +74,7 @@ export const completeWork = (wip: FiberNode) => {
         // 1. props是否变化 {onclick: xx} {onclick: xxx}
         // 2．变了 update flag
         // className style
-        // updateFiberProps(wip.stateNode, newProps);
+
         markUpdate(wip);
       } else {
         // 1. 构建DOM
