@@ -1,9 +1,7 @@
-// import {
-// 	unstable_ImmediatePriority,
-// 	unstable_NormalPriority,
-// 	unstable_UserBlockingPriority,
-// 	unstable_runWithPriority
-// } from 'scheduler';
+import { unstable_ImmediatePriority } from 'scheduler';
+import { unstable_NormalPriority } from 'scheduler';
+import { unstable_UserBlockingPriority } from 'scheduler';
+import { unstable_runWithPriority } from 'scheduler';
 
 import { Props } from 'shared/ReactTypes';
 import { Container } from 'hostConfig';
@@ -136,14 +134,12 @@ function triggerEventFlow(
   for (let i = 0; i < paths.length; i++) {
     const callback = paths[i];
     // 使用调度器，根据优先级执行 syntheticEvent
-    // unstable_runWithPriority(
-    //   eventTypeToSchedulerPriority(syntheticEvent.type),
-    //   () => {
-    //     callback.call(null, syntheticEvent);
-    //   }
-    // );
-
-    callback.call(null, syntheticEvent);
+    unstable_runWithPriority(
+      eventTypeToSchedulerPriority(syntheticEvent.type),
+      () => {
+        callback.call(null, syntheticEvent);
+      }
+    );
 
     if (syntheticEvent.__stopPropagation) {
       break;
@@ -151,15 +147,15 @@ function triggerEventFlow(
   }
 }
 
-// function eventTypeToSchedulerPriority(eventType: string) {
-//   switch (eventType) {
-//     case 'click':
-//     case 'keydown':
-//     case 'keyup':
-//       return unstable_ImmediatePriority;
-//     case 'scroll':
-//       return unstable_UserBlockingPriority;
-//     default:
-//       return unstable_NormalPriority;
-//   }
-// }
+function eventTypeToSchedulerPriority(eventType: string) {
+  switch (eventType) {
+    case 'click':
+    case 'keydown':
+    case 'keyup':
+      return unstable_ImmediatePriority;
+    case 'scroll':
+      return unstable_UserBlockingPriority;
+    default:
+      return unstable_NormalPriority;
+  }
+}
