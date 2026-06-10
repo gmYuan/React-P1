@@ -79,3 +79,8 @@ export function schedulerPriorityToLane(schedulerPriority: number): number {
   }
   return NoLane;
 }
+
+// 判断优先级是否足够高
+export function isSubsetOfLanes(set: Lanes, subset: Lane): boolean {
+  return (set & subset) === subset;
+}
