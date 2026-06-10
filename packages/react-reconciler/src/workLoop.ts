@@ -32,6 +32,7 @@ import { scheduleMicroTask } from 'hostConfig';
 import { unstable_scheduleCallback as scheduleCallback } from 'scheduler';
 import { unstable_NormalPriority as NormalPriority } from 'scheduler';
 import { unstable_shouldYield } from 'scheduler';
+import { unstable_cancelCallback } from 'scheduler';
 
 import { HookHasEffect, Passive } from './hookEffectTags';
 
@@ -102,6 +103,7 @@ function ensureRootIsScheduled(root: FiberRootNode) {
   } else {
     // 其他优先级，用宏任务调度
     const schedulerPriority = laneToSchedulerPriority(maxPendingLane);
+    // @ts-ignore
     newCallbackNode = scheduleCallback(
       schedulerPriority,
       performConcurrentWorkOnRoot.bind(null, root)
@@ -309,7 +311,7 @@ function workLoopSync() {
 }
 
 function workLoopConcurrent() {
-  while (workInProgress !== null && !unstable_shouldYield) {
+  while (workInProgress !== null && !unstable_shouldYield()) {
     performUnitOfWork(workInProgress);
   }
 }
