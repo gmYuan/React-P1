@@ -96,11 +96,14 @@ export const processUpdateQueue = <State>(
       if (!isSubsetOfLanes(renderLane, updateLane)) {
         // 优先级不够，跳过本次 Update
         if (__DEV__) {
-          devTrace('【UpdateQueue】当前渲染优先级不够，update 暂存到 baseQueue', {
-            update序号: pending.__YgmUpdateIndex,
-            update优先级: formatLane(updateLane),
-            当前渲染优先级: formatLane(renderLane)
-          });
+          devTrace(
+            '【UpdateQueue】当前渲染优先级不够，update 暂存到 baseQueue',
+            {
+              update序号: pending.__YgmUpdateIndex,
+              update优先级: formatLane(updateLane),
+              当前渲染优先级: formatLane(renderLane)
+            }
+          );
         }
         const clone = createUpdate(pending.action, pending.lane);
         // 判断之前是否存在被跳过的 Update
