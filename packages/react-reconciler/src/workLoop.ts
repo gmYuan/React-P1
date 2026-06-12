@@ -35,8 +35,10 @@ import { unstable_shouldYield } from 'scheduler';
 import { unstable_cancelCallback } from 'scheduler';
 
 import { HookHasEffect, Passive } from './hookEffectTags';
+import { devTrace, formatFiberTag, formatLane, formatLanes } from './devTrace';
 
 let workInProgress: FiberNode | null = null;
+let concurrentSliceIndex = 0;
 
 let wipRootRenderLane: Lane = NoLane;
 
@@ -51,12 +53,20 @@ function prepareFreshStack(root: FiberRootNode, lane: Lane) {
   root.finishedWork = null;
   workInProgress = createWorkInProgress(root.current, {});
   wipRootRenderLane = lane;
+  concurrentSliceIndex = 0;
 }
 
 export function scheduleUpdateOnFiber(fiber: FiberNode, lane: Lane) {
   // fiberRootNode
   const root = markUpdateFromFiberToRoot(fiber);
   markRootUpdated(root, lane);
+  if (__DEV__) {
+    devTrace('【调度】Fiber 触发更新，进入根调度', {
+      本次优先级: formatLane(lane),
+      触发节点: formatFiberTag(fiber.tag),
+      根上待处理: formatLanes(root.pendingLanes)
+    });
+  }
   ensureRootIsScheduled(root);
 }
 
@@ -73,6 +83,11 @@ function ensureRootIsScheduled(root: FiberRootNode) {
 
   // 没有更新了，重置并 return
   if (maxPendingLane === NoLane) {
+    if (__DEV__) {
+      devTrace('【调度】暂无待处理更新，清理调度状态', {
+        已取消旧任务: existingCallback !== null ? '是' : '否'
+      });
+    }
     if (existingCallback !== null) {
       unstable_cancelCallback(existingCallback);
     }
@@ -85,10 +100,23 @@ function ensureRootIsScheduled(root: FiberRootNode) {
   const prevPriority = root.callbackPriority;
 
   // 同优先级的更新，不需要重新调度
-  if (curPriority === prevPriority) return;
+  if (curPriority === prevPriority) {
+    if (__DEV__) {
+      devTrace('【调度】同优先级，复用已有调度，不重复安排', {
+        优先级: formatLane(curPriority)
+      });
+    }
+    return;
+  }
 
   // 否则，代表有更高优先级的更新插入，如果之前的调度存在，则取消之前的调度
   if (existingCallback !== null) {
+    if (__DEV__) {
+      devTrace('【调度】更高优先级更新插入，取消旧调度任务', {
+        旧优先级: formatLane(prevPriority),
+        新优先级: formatLane(curPriority)
+      });
+    }
     unstable_cancelCallback(existingCallback);
   }
   let newCallbackNode = null;
@@ -96,13 +124,21 @@ function ensureRootIsScheduled(root: FiberRootNode) {
   if (maxPendingLane === SyncLane) {
     // 同步优先级，用微任务调度
     if (__DEV__) {
-      console.log('在微任务中调度，优先级：', maxPendingLane);
+      devTrace('【调度】安排同步更新（微任务，不可中断）', {
+        优先级: formatLane(maxPendingLane)
+      });
     }
     scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root));
     scheduleMicroTask(flushSyncCallback);
   } else {
     // 其他优先级，用宏任务调度
     const schedulerPriority = laneToSchedulerPriority(maxPendingLane);
+    if (__DEV__) {
+      devTrace('【调度】安排并发更新（宏任务，可时间切片）', {
+        优先级: formatLane(maxPendingLane),
+        Scheduler优先级: schedulerPriority
+      });
+    }
     // @ts-ignore
     newCallbackNode = scheduleCallback(
       schedulerPriority,
@@ -137,6 +173,11 @@ function performConcurrentWorkOnRoot(
   if (didFlushPassiveEffect) {
     // 若 useEffect 回调执行完之后，有更高优先级的更新插入了
     if (root.callbackNode !== curCallback) {
+      if (__DEV__) {
+        devTrace(
+          '【并发】useEffect 执行后出现更高优先级更新，放弃本次并发任务'
+        );
+      }
       return null;
     }
   }
@@ -147,6 +188,13 @@ function performConcurrentWorkOnRoot(
   if (updateLane === NoLane) return null;
 
   const needSync = updateLane === SyncLane || didTimeout;
+  if (__DEV__) {
+    devTrace('【并发】开始执行并发工作任务', {
+      优先级: formatLane(updateLane),
+      任务已过期: didTimeout ? '是' : '否',
+      退化为同步: needSync ? '是' : '否'
+    });
+  }
   // render 阶段
   const exitStatus = renderRoot(root, updateLane, !needSync);
 
@@ -157,12 +205,20 @@ function performConcurrentWorkOnRoot(
     // 执行中断
     if (root.callbackNode !== curCallbackNode) {
       // 代表有更高优先级的任务插进来
+      if (__DEV__) {
+        devTrace('【并发】渲染未完成时被更高优先级打断，放弃续跑');
+      }
       return null;
     }
     return performConcurrentWorkOnRoot.bind(null, root);
   }
 
   if (exitStatus === RootComplete) {
+    if (__DEV__) {
+      devTrace('【并发】渲染完成，即将进入 Commit', {
+        优先级: formatLane(updateLane)
+      });
+    }
     // 执行完了
     // 创建根 Fiber 树的 Root Fiber
     const finishedWork = root.current.alternate;
@@ -186,6 +242,11 @@ function performSyncWorkOnRoot(root: FiberRootNode) {
     return;
   }
 
+  if (__DEV__) {
+    devTrace('【同步】开始执行同步工作任务（一口气渲染完）', {
+      优先级: formatLane(nextLane)
+    });
+  }
   // render 阶段
   const exitStatus = renderRoot(root, nextLane, false);
 
@@ -206,15 +267,17 @@ function performSyncWorkOnRoot(root: FiberRootNode) {
 
 // Render 阶段入口
 function renderRoot(root: FiberRootNode, lane: Lane, shouldTimeSlice: boolean) {
+  const isResume = wipRootRenderLane === lane;
   if (__DEV__) {
-    console.warn(
-      `render 阶段开始${shouldTimeSlice ? '并发' : '同步'}更新`,
-      root
-    );
+    devTrace('【Render】开始渲染阶段', {
+      优先级: formatLane(lane),
+      模式: shouldTimeSlice ? '并发（可切片）' : '同步（不可中断）',
+      是否中断恢复: isResume ? '是' : '否'
+    });
   }
 
   // 中断再继续时，不用初始化
-  if (wipRootRenderLane !== lane) {
+  if (!isResume) {
     // 初始化 workInProgress 变量
     prepareFreshStack(root, lane);
   }
@@ -250,11 +313,12 @@ function commitRoot(root: FiberRootNode) {
     return;
   }
 
-  if (__DEV__) {
-    console.warn('commit阶段开始', finishedWork);
-  }
-
   const lane = root.finishedLane;
+  if (__DEV__) {
+    devTrace('【Commit】开始提交阶段，变更将反映到 DOM', {
+      优先级: formatLane(lane)
+    });
+  }
   if (lane === NoLane && __DEV__) {
     console.error('commit阶段finishedLane不应该是 NoLane');
     return;
@@ -313,6 +377,13 @@ function workLoopSync() {
 function workLoopConcurrent() {
   while (workInProgress !== null && !unstable_shouldYield()) {
     performUnitOfWork(workInProgress);
+  }
+  if (__DEV__ && workInProgress !== null) {
+    concurrentSliceIndex += 1;
+    devTrace('【时间切片】本时间片用尽，让出主线程', {
+      第几次切片: concurrentSliceIndex,
+      断在哪个节点: formatFiberTag(workInProgress.tag)
+    });
   }
 }
 
