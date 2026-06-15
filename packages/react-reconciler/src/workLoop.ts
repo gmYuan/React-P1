@@ -78,7 +78,7 @@ function markRootUpdated(root: FiberRootNode, lane: Lane) {
 // Schedule 阶段入口
 function ensureRootIsScheduled(root: FiberRootNode) {
   const maxPendingLane = getHighestPriorityLane(root.pendingLanes);
-
+  // 记作 preCallback
   const existingCallback = root.callbackNode;
 
   // 没有更新了，重置并 return

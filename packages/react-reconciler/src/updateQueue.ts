@@ -63,8 +63,11 @@ export const enqueueUpdate = <State>(
 
 // 从 UpdateQueue 中消费 Update 的方法
 export const processUpdateQueue = <State>(
+  // 基础状态- 当前桌上的菜（已上的菜）
   baseState: State,
+  // 待处理的 Update 环状链表- 待处理的订单列表
   pendingUpdate: Update<State> | null,
+  // 本次渲染优先级- 当前能处理的订单类型（"加急"、"普通"）
   renderLane: Lane
 ): {
   memoizedState: State;
@@ -72,8 +75,11 @@ export const processUpdateQueue = <State>(
   baseQueue: Update<State> | null;
 } => {
   const result: ReturnType<typeof processUpdateQueue<State>> = {
+    // 计算后的最终状态- 最终桌上的菜
     memoizedState: baseState,
+    // 下次计算的基础状态- 下次点菜的基础
     baseState,
+    // 被跳过的 Update 队列- 暂时处理不了的订单
     baseQueue: null
   };
 
@@ -82,13 +88,14 @@ export const processUpdateQueue = <State>(
     const first = pendingUpdate.next;
     let pending = first as Update<any>;
 
-    // 消费本次 Update 后的 baseState
+    // 快照：只在遇到第一个被跳过的 Update 时的 state快照
     let newBaseState = baseState;
-    // 消费本次 Update 后计算后的结果
+    // 累加器：参与本次计算的所有 Update 的结果
+    // 一直在累加（无论是否被跳过）
     let newState = baseState;
-    // 消费本次 Update 后的 baseQueue 链表头
+    // 链表：被跳过的 Update（头节点）
     let newBaseQueueFirst: Update<State> | null = null;
-    // 消费本次 Update 后的 baseQueue 链表尾
+    // 链表：被跳过的 Update（尾节点）
     let newBaseQueueLast: Update<State> | null = null;
 
     do {

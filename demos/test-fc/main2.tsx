@@ -75,19 +75,21 @@ export default function App() {
   const [enableEffectKick, setEnableEffectKick] = useState(false);
 
   /**
-   * 🎯 综合测试（推荐）：覆盖所有功能
+   * 🎯 baseQueue Bug 复现测试（修改版）
    *
    * 测试流程：
    * 1. u0: count + 1 (低优先级) → 时间切片会触发（渲染 200 个组件）
-   * 2. u1: count 设置为 10 (高优先级) → 优先级打断 + baseQueue 跳过
-   * 3. u2: count + 100 (低优先级) → baseQueue 连续性保证
+   * 2. u1: count + 10 (高优先级) → 优先级打断 + baseQueue 跳过
+   * 3. 等待 u1 完全渲染完成（同步强制）
+   * 4. u2: count + 100 (低优先级) → ⚠️ 此时 pending 为 null，bug 复现！
    *
-   * 预期结果：count 最终为 110
-   * 预期渲染：items 最终为 50（高优先级打断低优先级）
+   * 有 bug 时：count = 10（错误！u0 和 u2 被丢失）
+   * 修复后：count = 111（正确！0 → +1 → +10 → +100）
    */
   const runComprehensiveTest = () => {
     console.clear();
-    console.log('🎯 === 开始综合测试 ===');
+    console.log('🎯 === 开始 baseQueue Bug 复现测试 ===');
+    console.log('⚠️ 当前代码是有 bug 的版本（processUpdateQueue 嵌套在 if pending 内）\n');
     setCount(0);
     setItems(100);
     setThrowAt(null);
@@ -98,46 +100,56 @@ export default function App() {
       unstable_runWithPriority(unstable_IdlePriority, () => {
         console.log('📌 u0 触发 (IdlePriority): count + 1, items = 200');
         setCount((n) => {
-          console.log('  u0 执行: count', n, '→', n + 1);
+          console.log('  u0 准备执行: count', n, '→', n + 1);
           return n + 1;
         });
         setItems(200); // 200 * 4ms = 800ms，触发时间切片
       });
     }, 10);
 
-    // u1: 高优先级，打断 u0 的渲染
+    // u1: 高优先级，打断 u0 的渲染（改为 +10）
     setTimeout(() => {
       unstable_runWithPriority(unstable_ImmediatePriority, () => {
-        console.log('📌 u1 触发 (ImmediatePriority): count = 10, items = 50');
+        console.log('📌 u1 触发 (ImmediatePriority): count + 10, items = 50');
         setCount((n) => {
-          console.log('  u1 执行: count', n, '→ 10');
-          return 10;
+          console.log('  u1 执行: count', n, '→', n + 10);
+          return n + 10;
         });
         setItems(50); // 打断渲染，改为 50 个
       });
     }, 100);
 
-    // u2: 低优先级 count + 100
+    // u2: 延迟触发，确保 u1 已经完全渲染完成
+    // 关键：此时 pending 为 null，但 baseQueue 有 u0
     setTimeout(() => {
       unstable_runWithPriority(unstable_IdlePriority, () => {
         console.log('📌 u2 触发 (IdlePriority): count + 100');
+        console.log('⚠️ 此时 pending 为 null，baseQueue 有 u0');
+        console.log('⚠️ 有 bug 的代码不会处理 baseQueue！');
         setCount((n) => {
-          console.log('  u2 执行: count', n, '→', n + 100);
+          console.log('  u2 准备执行: count', n, '→', n + 100);
           return n + 100;
         });
       });
-    }, 120);
+    }, 2000); // 延迟 2 秒，确保 u1 完成
 
     setTimeout(() => {
-      console.log('\n✅ === 预期结果 ===');
-      console.log('count 应为 110 (baseQueue 正确恢复)');
-      console.log('items 应为 50 (高优先级打断成功)');
-      console.log('\n🔍 === 断点建议 ===');
-      console.log('1. processUpdateQueue: isSubsetOfLanes 判断');
-      console.log('2. updateState: baseQueue 合并');
-      console.log('3. ensureRootIsScheduled: 优先级比较');
-      console.log('4. renderRoot: wipRootRenderLane 判断');
-    }, 300);
+      console.log('\n' + '='.repeat(60));
+      console.log('❌ === Bug 版本结果（当前代码）===');
+      console.log('count = 10 (错误！只有 u1 生效，u0 和 u2 被丢失)');
+      console.log('原因：第二次渲染时 pending===null，跳过了 baseQueue 处理');
+      console.log('\n✅ === 修复后应有的结果 ===');
+      console.log('count = 111 (正确！0 → +1[u0] → +10[u1] → +100[u2])');
+      console.log('items = 50 (高优先级打断成功)');
+      console.log('='.repeat(60));
+      console.log('\n🔍 === 调试断点建议 ===');
+      console.log('1. updateState 第 125 行: if (pending !== null)');
+      console.log('   → 第二次渲染时会跳过这个 if，不处理 baseQueue');
+      console.log('2. updateState 第 155 行: return [hook.memoizedState, ...]');
+      console.log('   → 直接返回旧的 memoizedState (10)');
+      console.log('3. processUpdateQueue: 观察是否被调用');
+      console.log('   → 第二次渲染时不会被调用（bug！）');
+    }, 2500);
   };
 
   /**

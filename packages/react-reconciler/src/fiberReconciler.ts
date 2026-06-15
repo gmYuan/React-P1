@@ -24,17 +24,17 @@ export function updateContainer(
   root: FiberRootNode
 ) {
   const hostRootFiber = root.current;
-  const lane = requestUpdateLanes();
+  const renderLane = requestUpdateLanes();
   if (__DEV__) {
     devTrace('【挂载】根容器收到初次渲染请求', {
-      优先级: formatLane(lane)
+      优先级: formatLane(renderLane)
     });
   }
-  const update = createUpdate<ReactElementType | null>(element, lane);
+  const update = createUpdate<ReactElementType | null>(element, renderLane);
   enqueueUpdate(
     hostRootFiber.updateQueue as UpdateQueue<ReactElementType | null>,
     update
   );
-  scheduleUpdateOnFiber(hostRootFiber, lane);
+  scheduleUpdateOnFiber(hostRootFiber, renderLane);
   return element;
 }
