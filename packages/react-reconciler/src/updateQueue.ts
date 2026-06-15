@@ -1,7 +1,6 @@
 import { Action } from 'shared/ReactTypes';
 import { Dispatch } from 'react/src/currentDispatcher';
 import { isSubsetOfLanes, Lane, NoLane } from './fiberLanes';
-import { devTrace, formatLane } from './devTrace';
 
 let __YgmUpdateIndex = 0;
 
@@ -102,16 +101,6 @@ export const processUpdateQueue = <State>(
       const updateLane = pending.lane;
       if (!isSubsetOfLanes(renderLane, updateLane)) {
         // 优先级不够，跳过本次 Update
-        if (__DEV__) {
-          devTrace(
-            '【UpdateQueue】当前渲染优先级不够，update 暂存到 baseQueue',
-            {
-              update序号: pending.__YgmUpdateIndex,
-              update优先级: formatLane(updateLane),
-              当前渲染优先级: formatLane(renderLane)
-            }
-          );
-        }
         const clone = createUpdate(pending.action, pending.lane);
         // 判断之前是否存在被跳过的 Update
         // 是不是第一个被跳过的
