@@ -145,6 +145,7 @@ function updateState<State>(): [State, Dispatch<State>] {
 
   // 只有旧账，也要参与本轮计算
   if (baseQueue !== null) {
+    // console.log('555', baseQueue);
     const {
       memoizedState,
       baseQueue: newBaseQueue,

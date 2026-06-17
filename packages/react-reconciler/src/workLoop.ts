@@ -90,6 +90,7 @@ function ensureRootIsScheduled(root: FiberRootNode) {
 
   // 否则，代表有更高优先级的更新插入，如果之前的调度存在，则取消之前的调度
   if (existingCallback !== null) {
+    // console.log('1111', existingCallback);
     unstable_cancelCallback(existingCallback);
   }
   let newCallbackNode = null;
@@ -191,6 +192,7 @@ function performSyncWorkOnRoot(root: FiberRootNode) {
   }
 
   // render 阶段
+  // console.log('4444', root);
   const exitStatus = renderRoot(root, nextLane, false);
 
   // render 阶段结束后，进入 commit 阶段
@@ -214,6 +216,7 @@ function renderRoot(root: FiberRootNode, lane: Lane, shouldTimeSlice: boolean) {
 
   // 中断再继续时，不用初始化
   if (!isResume) {
+    // console.log('333', root, lane);
     // 初始化 workInProgress 变量
     prepareFreshStack(root, lane);
   }
