@@ -144,6 +144,12 @@ function performConcurrentWorkOnRoot(
 
   if (updateLane === NoLane) return null;
 
+  // 这里的 didTimeout: true时表示 任务的过期时间 ≤ 当前时间 ==> 任务等太久了，过期了
+  // didTimeout = (currentTask.expirationTime <= currentTime)
+  // expirationTime 由 Scheduler priority 对应的 timeout 策略 决定（不同优先级有不同超时窗口）
+  // currentTime 是 当前 performXXXWorkOnRoot 真正的执行时间
+
+  // 这里的任务，就是指 root.callbackNode的  SchedulerTask句柄
   const needSync = updateLane === SyncLane || didTimeout;
   // render 阶段
   const exitStatus = renderRoot(root, updateLane, !needSync);
@@ -306,6 +312,8 @@ function workLoopConcurrent() {
 }
 
 function performUnitOfWork(fiber: FiberNode) {
+  // console.log('dd3', fiber);
+
   const next = beginWork(fiber, wipRootRenderLane);
   fiber.memoizedProps = fiber.pendingProps;
 
@@ -318,8 +326,9 @@ function performUnitOfWork(fiber: FiberNode) {
 
 function completeUnitOfWork(fiber: FiberNode) {
   let node: FiberNode | null = fiber;
-
   do {
+    // console.log('nn', node);
+
     completeWork(node);
     const sibling = node.sibling;
 
@@ -335,6 +344,8 @@ function completeUnitOfWork(fiber: FiberNode) {
 function flushPassiveEffects(
   pendingPassiveEffects: PendingPassiveEffects
 ): boolean {
+  // console.log('dd', pendingPassiveEffects);
+  // console.log('dd2', pendingPassiveEffects);
   let didFlushPassiveEffect = false;
 
   // 先触发所有 unmount destroy

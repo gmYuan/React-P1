@@ -62,11 +62,11 @@ export const enqueueUpdate = <State>(
 
 // 从 UpdateQueue 中消费 Update 的方法
 export const processUpdateQueue = <State>(
-  // 基础状态- 当前桌上的菜（已上的菜）
+  // 基础状态- 上一次可靠的状态起点
   baseState: State,
-  // 待处理的 Update 环状链表- 待处理的订单列表
+  // 待处理的 Update 环状链表
   pendingUpdate: Update<State> | null,
-  // 本次渲染优先级- 当前能处理的订单类型（"加急"、"普通"）
+  // 本轮渲染 允许处理的优先级
   renderLane: Lane
 ): {
   memoizedState: State;
@@ -74,11 +74,11 @@ export const processUpdateQueue = <State>(
   baseQueue: Update<State> | null;
 } => {
   const result: ReturnType<typeof processUpdateQueue<State>> = {
-    // 计算后的最终状态- 最终桌上的菜
+    // 每轮算出来的最终 state（给当前渲染用）
     memoizedState: baseState,
-    // 下次计算的基础状态- 下次点菜的基础
+    // 下次计算的基础状态
     baseState,
-    // 被跳过的 Update 队列- 暂时处理不了的订单
+    // 被跳过的 Update 队列
     baseQueue: null
   };
 
@@ -127,7 +127,7 @@ export const processUpdateQueue = <State>(
         const action = pending.action;
         if (action instanceof Function) {
           // 若 action 是回调函数：(baseState = 1, update = (i) => 5i)) => memoizedState = 5
-          newState = action(baseState);
+          newState = action(newState);
         } else {
           // 若 action 是状态值：(baseState = 1, update = 2) => memoizedState = 2
           newState = action;

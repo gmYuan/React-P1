@@ -122,10 +122,10 @@ function updateState<State>(): [State, Dispatch<State>] {
   const current = currentHook as Hook;
   let baseQueue = current.baseQueue;
 
+  // 先把新来的 pending 更新并入 baseQueue（旧账）
   if (pending !== null) {
-    // pending baseQueue update保存在current中
     if (baseQueue !== null) {
-      // 合并 baseQueue 和 queue 链表
+      // 合并 baseQueue 和 pending 两个环状链表
       // baseQueue     b2 -> b0 -> b1 -> b2
       // pendingQueue  p2 -> p0 -> p1 -> p2
       const baseQueueFirst = baseQueue.next;
@@ -134,22 +134,26 @@ function updateState<State>(): [State, Dispatch<State>] {
       baseQueue.next = pendingFirst;
       pending.next = baseQueueFirst;
     }
+
+    // 所有旧账，都以 当前合并过的新账为基准
     baseQueue = pending;
-    // 将 baseQueue 保存在 current
+    // 将合并后的队列保存在 current 中，供后续 render 复用
     current.baseQueue = pending;
+    // pending 已被并入 baseQueue，清空等待队列
     queue.shared.pending = null;
+  }
 
-    if (baseQueue !== null) {
-      const {
-        memoizedState,
-        baseQueue: newBaseQueue,
-        baseState: newBaseState
-      } = processUpdateQueue(baseState, baseQueue, renderLane);
+  // 只有旧账，也要参与本轮计算
+  if (baseQueue !== null) {
+    const {
+      memoizedState,
+      baseQueue: newBaseQueue,
+      baseState: newBaseState
+    } = processUpdateQueue(baseState, baseQueue, renderLane);
 
-      hook.memoizedState = memoizedState;
-      hook.baseState = newBaseState;
-      hook.baseQueue = newBaseQueue;
-    }
+    hook.memoizedState = memoizedState;
+    hook.baseState = newBaseState;
+    hook.baseQueue = newBaseQueue;
   }
 
   return [hook.memoizedState, queue.dispatch as Dispatch<State>];
