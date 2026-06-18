@@ -95,6 +95,14 @@ function ensureRootIsScheduled(root: FiberRootNode) {
   }
   let newCallbackNode = null;
 
+  if (__DEV__) {
+    console.log(
+      `在${maxPendingLane === SyncLane ? '微' : '宏'}任务中调度，
+      优先级为${maxPendingLane}
+      `
+    );
+  }
+
   if (maxPendingLane === SyncLane) {
     // 同步优先级，用微任务调度
     scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root));

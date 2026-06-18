@@ -1,23 +1,28 @@
+import internals from 'shared/internals';
 import { FiberRootNode } from './fiber';
 
 import { unstable_getCurrentPriorityLevel } from 'scheduler';
 import { unstable_IdlePriority } from 'scheduler';
 import { unstable_ImmediatePriority } from 'scheduler';
+import { unstable_LowPriority } from 'scheduler';
 import { unstable_NormalPriority } from 'scheduler';
 import { unstable_UserBlockingPriority } from 'scheduler';
+
+const { currentBatchConfig } = internals;
 
 // 代表 update 的优先级
 export type Lane = number;
 // 代表 lane 的集合
 export type Lanes = number;
 
-export const NoLane = 0b0000;
-export const NoLanes = 0b0000;
+export const NoLane = 0b00000;
+export const NoLanes = 0b00000;
 
-export const SyncLane = 0b0001;
-export const InputContinuousLane = 0b0010;
-export const DefaultLane = 0b0100;
-export const IdleLane = 0b1000;
+export const SyncLane = 0b00001;
+export const InputContinuousLane = 0b00010;
+export const DefaultLane = 0b00100;
+export const TransitionLane = 0b01000;
+export const IdleLane = 0b10000;
 
 // 合并 lane
 export function mergeLanes(laneA: Lane, laneB: Lane): Lanes {
@@ -26,6 +31,11 @@ export function mergeLanes(laneA: Lane, laneB: Lane): Lanes {
 
 // 获取更新的优先级
 export function requestUpdateLanes() {
+  const isTransition = currentBatchConfig.transition !== null;
+  if (isTransition) {
+    return TransitionLane;
+  }
+
   // 从上下文环境中获取 Scheduler 优先级
   const currentSchedulerPriority = unstable_getCurrentPriorityLevel();
   const lane = schedulerPriorityToLane(currentSchedulerPriority);
@@ -63,6 +73,9 @@ export function laneToSchedulerPriority(lanes: number): number {
   }
   if (lane == DefaultLane) {
     return unstable_NormalPriority;
+  }
+  if (lane == TransitionLane) {
+    return unstable_LowPriority;
   }
   return unstable_IdlePriority;
 }
