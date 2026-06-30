@@ -8,10 +8,10 @@ export type Instance = Element;
 export type TextInstance = Text;
 
 export const createInstance = (type: string, props: Props): Instance => {
-  // TODO 处理props
-  const element = document.createElement(type) as unknown;
-  updateFiberProps(element as DOMElement, props);
-  return element as DOMElement;
+  const element = document.createElement(type);
+  // applyPropsToElement(element, props);
+  updateFiberProps(element as unknown as DOMElement, props);
+  return element;
 };
 
 export const appendInitialChild = (
@@ -35,6 +35,7 @@ export const appendChildToContainer = (
 export const commitUpdate = (fiber: FiberNode) => {
   switch (fiber.tag) {
     case HostComponent:
+      // applyPropsToElement(fiber.stateNode, fiber.memoizedProps);
       return updateFiberProps(fiber.stateNode, fiber.memoizedProps);
 
     case HostText:
@@ -70,6 +71,56 @@ export const insertChildToContainer = (
 ) => {
   container.insertBefore(child, before);
 };
+
+function applyPropsToElement(element: Element, props: Props) {
+  if (props == null) {
+    return;
+  }
+
+  Object.keys(props).forEach((key) => {
+    const value = props[key];
+
+    if (key === 'children' || key === 'key' || key === 'ref') {
+      return;
+    }
+
+    // 事件由 SyntheticEvent 统一代理，不直接绑在 DOM 上
+    if (/^on[A-Z]/.test(key)) {
+      return;
+    }
+
+    const htmlElement = element as HTMLElement;
+
+    if (key === 'className') {
+      htmlElement.className = value ?? '';
+      return;
+    }
+
+    if (key === 'style') {
+      const style = htmlElement.style;
+      if (value == null || typeof value !== 'object') {
+        htmlElement.removeAttribute('style');
+        return;
+      }
+      Object.keys(value).forEach((styleName) => {
+        style.setProperty(styleName, String(value[styleName]));
+      });
+      return;
+    }
+
+    if (value == null || value === false) {
+      element.removeAttribute(key);
+      return;
+    }
+
+    if (value === true) {
+      element.setAttribute(key, '');
+      return;
+    }
+
+    element.setAttribute(key, String(value));
+  });
+}
 
 export const scheduleMicroTask =
   typeof queueMicrotask === 'function'

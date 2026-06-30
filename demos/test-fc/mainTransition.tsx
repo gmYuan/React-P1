@@ -1,5 +1,6 @@
 import { useState, useTransition } from 'react';
 import ReactDOM from 'react-dom';
+import './style.css';
 
 type Tab = 'home' | 'blog' | 'contact';
 

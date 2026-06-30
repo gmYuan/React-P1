@@ -97,9 +97,9 @@ function ensureRootIsScheduled(root: FiberRootNode) {
 
   if (__DEV__) {
     console.log(
-      `在${maxPendingLane === SyncLane ? '微' : '宏'}任务中调度，
-      优先级为${maxPendingLane}
-      `
+      `在${
+        maxPendingLane === SyncLane ? '微' : '宏'
+      }任务中调度，优先级为${maxPendingLane} `
     );
   }
 
@@ -163,7 +163,7 @@ function performConcurrentWorkOnRoot(
   // render 阶段
   const exitStatus = renderRoot(root, updateLane, !needSync);
 
-  // render 阶段结束后，进入 commit 阶段
+  // render 阶段 中止/结束后，进行 优先级确认
   ensureRootIsScheduled(root);
 
   if (exitStatus === RootIncomplete) {
